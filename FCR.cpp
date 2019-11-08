@@ -157,7 +157,7 @@ private:
 
 class FCR{
 public:
-    FCR():m(0),n(0),B(0),num_of_0(0){}
+    FCR():m(0),n(0),B(0),num_of_0(0),step(0){}
     void read()
     {   
         ifstream rdfile;
@@ -226,7 +226,7 @@ public:
     } 
     void test()
     {
-       //cout<< (*(matrix+5*n+4))->adjlist.front().r <<" " <<(*(matrix+5*n+4))->adjlist.front().c<<endl;
+      
     }
     void BFS_FindDisranceToR(){
         visited = new bool* [m];
@@ -249,12 +249,13 @@ public:
         while(!q.empty()){
             adjnode node = q.front();  
             q.pop(); 
-            for(curr = matrix[n*node.r+node.c]->adjlist.first;curr!=nullptr;curr=curr->next){
+            for(curr = matrix[n*node.r+node.c]->adjlist.first;curr!=nullptr;curr = curr->next){
                 if(visited[curr->value.r][curr->value.c]==false){
                     visited[curr->value.r][curr->value.c] = true;             
                     matrix[n*curr->value.r+curr->value.c]->distance_to_R = matrix[n*node.r+node.c]->distance_to_R+1;
                     matrix[n*curr->value.r+curr->value.c]->parent = node;
                     q.push(curr->value);
+                    q_DistanceSorted.push(curr->value);
                 }
             }
         }
@@ -284,8 +285,67 @@ public:
         }
     }
     void go_to(adjnode dest)
-    {
+    {   
+        queue<adjnode> q;
+        adjnode tmp(dest.r,dest.c);
+        while(!(tmp.r==R.r&&tmp.c==R.c)){
+            q.push(tmp);
+            tmp = matrix[n*tmp.r+tmp.c]->parent;
+        }
+        for(;!q.empty();q.pop_back()){ 
+            tmp = q.back();
+            visited[tmp.r][tmp.c] = true;
+            step++;
+        }
+        int d = matrix[n*tmp.r+tmp.c]->distance_to_R-1;
+        int w = 0;
+        while(!(tmp.r==R.r&&tmp.c==R.c)){
+            w = 0;
+            for(link<adjnode>* a = matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
+                if(matrix[n*a->value.r+a->value.c]->distance_to_R==d){
+                    if(visited[a->value.r][a->value.c]==false){
+                        q.push(a->value);
+                        w++;
+                    }
+                }
+            }
+            if(w!=0){
+                tmp = q.back();   //front還是back好
+                visited[tmp.r][tmp.c] = true;
+                for(;!q.empty();q.pop()){}       
+            }
+            else 
+                tmp = matrix[n*tmp.r+tmp.c]->parent;
+            d--; 
+            step++; 
+        }
+
+        cout << "step: " << step << endl;
+        for(int i=0;i<m;i++){
+            for(int j=0;j<m;j++){
+                cout << visited[i][j] << " ";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    void traverse(){
         
+        visited = new bool* [m];    
+        for(int i=0;i<m;i++)
+            visited[i] = new bool[n];
+        for(int i=0;i<m;i++)
+            for(int j=0;j<n;j++)
+                visited[i][j] = false;
+        while(!q_DistanceSorted.empty()){
+            adjnode node = q_DistanceSorted.back();
+            q_DistanceSorted.pop_back();
+            if(visited[node.r][node.c]==false)
+                go_to(node);
+        }
+        for(int i=0;i<m;i++)
+            delete[] visited[i];
+        delete []visited;
     }
 private:
     adjnode R;
@@ -293,13 +353,18 @@ private:
     ElementNode** matrix;
     bool** visited;
     int num_of_0;
+    queue<adjnode> q_DistanceSorted;
+    int step;
 };
 
 
 int main(){
     FCR fcr;
     fcr.read();
-    fcr.test();
     fcr.BFS_FindDisranceToR();
+    fcr.test();
+    fcr.traverse();
+    
+    
 
 }

@@ -1,72 +1,25 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <time.h>
 using namespace std;
 
-//template<class T> class list;
-template<class T> class queue;
+template<class T> class list;
 class FCR;
-//template<class T> class list_iterator;
 
 template<class T>
 class link{
-//friend class list<T>;
+
 friend class FCR;
-friend class queue<T>;
+friend class list<T>;
 public:
     link(T& x):value(x),next(nullptr){}
 private:
     T value;
     link<T>* next;
 };
-//template<class T>
-// class list_iterator{
-// friend class list<T>;
-// public:
-//     typedef list_iterator<T> iterator;
-//     list_iterator(): current_link(0){}
-//     list_iterator(link<T>* source_link): current_link(source_link){}
-//     list_iterator(list_iterator<T>* source_iterator): current_link(source_iterator.current_link){}
-// private:
-//     link<T>* current_link;
-// };
-
-// template<class T>
-// class list{
-// friend class FCR;
-// public:
-//     list():first(nullptr),last(nullptr){}
-//     void push_back(T& n){
-//         link<T>* tmp = new link<T>(n);
-//         if(empty()){
-//             first = tmp;
-//             last = tmp;
-//         }            
-//         else{
-//             last->next = tmp;
-//             last = tmp;
-//         }        
-//     }
-//     bool empty(){
-//         return first==nullptr;
-//     }
-//     void showlist(){
-//         link<T>* curr = first;
-//         while(curr){
-//             cout << curr->value.r << " " << curr->value.c << endl;
-//             curr = curr->next;
-//         }
-//     }
-//     T& front(){
-//         return first->value;
-//     }
-// private:
-//     link<T>* first;
-//     link<T>* last;
-// };
 
 class adjnode{
-    //friend class list<adjnode>;
     friend class FCR;
 public:
     adjnode():r(0),c(0){}
@@ -76,10 +29,10 @@ private:
 };
 
 template<class T>
-class queue{
+class list{
 friend class FCR;
 public:
-    queue():first(nullptr),last(nullptr),my_size(0){}
+    list():first(nullptr),last(nullptr),my_size(0){}
     void push(T& n){
         link<T>* tmp = new link<T>(n);
         if(empty()){
@@ -141,7 +94,6 @@ private:
 };
 
 
-
 class ElementNode{
 friend class FCR;
 public:
@@ -149,7 +101,7 @@ public:
     ElementNode(int rr,int cc,char dd):r(rr),c(cc),data(dd),side(0),distance_to_R(0),dead_end(0){}
 
 private:   
-    queue<adjnode> adjlist;
+    list<adjnode> adjlist;
     int distance_to_R;
     int r,c;
     char data;
@@ -160,17 +112,6 @@ private:
     adjnode parent;
 
 };
-
-
-class PathNode{
-friend class FCR;
-public:
-    PathNode(int rr,int cc):r(rr),c(cc),next(nullptr){}
-private:
-    int r,c;
-    PathNode* next;
-};
-
 class FCR{
 public:
     FCR():m(0),n(0),B(0),num_of_0(0),step(0){}
@@ -269,17 +210,41 @@ public:
     }
     void test()
     {
-        SetDeadEnd();
+        fstream d_file;
+        d_file.open("distance.data",ios::out);
         for(int i=0;i<m;i++){
             for(int j=0;j<n;j++){
-                cout << matrix[i*n+j]->dead_len[0] << " ";
+                d_file << setw(4) << matrix[i*n+j]->distance_to_R << " ";
             }
-            cout << endl;
+            d_file << endl;
         }
+        d_file << endl;   
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                d_file << setw(4) << matrix[i*n+j]->side << " ";
+            }
+            d_file << endl;
+        }
+        d_file << endl;
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                d_file << setw(4) << matrix[i*n+j]->parent.r <<matrix[i*n+j]->parent.c << " ";
+            }
+            d_file << endl;
+        }
+        d_file << endl;
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                d_file << setw(4) << matrix[i*n+j]->dead_len[0] << " ";
+            }
+            d_file << endl;
+        }
+        d_file.close();
     }
     void BFS_FindDisranceToR(){
         visited = new bool* [m];
-        int disc = 0;     
+        int disc = 0;   
+        int maxdis = -1;  
         link<adjnode>* curr;
 
         for(int i=0;i<m;i++)
@@ -291,7 +256,7 @@ public:
             }
         }
         
-        queue<adjnode> q;
+        list<adjnode> q;
         visited[R.r][R.c] = true;
         matrix[n*R.r+R.c]->distance_to_R = disc;
         q.push(R);
@@ -302,49 +267,32 @@ public:
                 if(visited[curr->value.r][curr->value.c]==false){
                     visited[curr->value.r][curr->value.c] = true;             
                     matrix[n*curr->value.r+curr->value.c]->distance_to_R = matrix[n*node.r+node.c]->distance_to_R+1;
+                    if(matrix[n*node.r+node.c]->distance_to_R+1>maxdis)maxdis = matrix[n*node.r+node.c]->distance_to_R+1;
                     matrix[n*curr->value.r+curr->value.c]->parent = node;
                     q.push(curr->value);
                     q_DistanceSorted.push(curr->value);
                 }
             }
         }
+        cout << maxdis << endl;
         for(int i=0;i<m;i++)
             delete[] visited[i];
         delete []visited;
-
-        for(int i=0;i<m;i++){
-            for(int j=0;j<n;j++){
-                cout <<setw(3)<< matrix[i*n+j]->distance_to_R << " ";
-            }
-            cout << endl;
-        }
-        cout << endl;
-        for(int i=0;i<m;i++){
-            for(int j=0;j<n;j++){
-                cout << matrix[i*n+j]->side << " ";
-            }
-            cout << endl;
-        }
-        cout << endl;
-        for(int i=0;i<m;i++){
-            for(int j=0;j<n;j++){
-                cout << matrix[i*n+j]->parent.r <<matrix[i*n+j]->parent.c << " ";
-            }
-            cout << endl;
-        }
     }
     void go_to(adjnode dest)
     {   
         int s=0,batt=B;
-        queue<adjnode> q;
+        list<adjnode> q;
         adjnode tmp(dest.r,dest.c);
         while(!(tmp.r==R.r&&tmp.c==R.c)){
             q.push(tmp);
             tmp = matrix[n*tmp.r+tmp.c]->parent;
         }
+        if(step == 0) ans_list.push(tmp);
         for(;!q.empty();q.pop_back()){ 
             tmp = q.back();
             visited[tmp.r][tmp.c] = true;
+            ans_list.push(tmp);
             s++;
         }
         batt -= s;
@@ -363,33 +311,37 @@ public:
             adjnode a3;
             bool save = false;
             int enterdead = -1;
-            if(q.size()>=2){  
-                a1 = q.front();
-                a2 = q.back();         
-                for(link<adjnode>* i= matrix[n*a1.r+a1.c]->adjlist.first;i!=nullptr;i=i->next)
-                    for(link<adjnode>* j=matrix[n*a2.r+a2.c]->adjlist.first;j!=nullptr;j=j->next)
-                        if((i->value.r == j->value.r&&i->value.c == j->value.c)&&(i->value.r!=tmp.r&&i->value.c!=tmp.c)&&(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2)){
-                            a3 = i->value;
-                            save = true;
-                        }                      
-            }
+
             int battneed;
             if(matrix[n*tmp.r+tmp.c]->dead_end !=0 ){
-                for(int i=0;i<matrix[n*tmp.r+tmp.c]->dead_end;i++){
-                    int start_r = matrix[n*tmp.r+tmp.c]->endstart[i].r;
-                    int start_c = matrix[n*tmp.r+tmp.c]->endstart[i].c;
-                    battneed = 2*matrix[n*tmp.r+tmp.c]->dead_len[i];
-                    if(visited[start_r][start_c]==false)
-                        if(batt-battneed>=matrix[n*tmp.r+tmp.c]->distance_to_R)
-                            enterdead = i;     
+                for(int i=0;i<matrix[n*tmp.r+tmp.c]->dead_end;i++){                  
+                    if(visited[matrix[n*tmp.r+tmp.c]->endstart[i].c][matrix[n*tmp.r+tmp.c]->endstart[i].r]==false)  //start_r start_c
+                        if(batt-battneed>=matrix[n*tmp.r+tmp.c]->distance_to_R){
+                            enterdead = i; 
+                            battneed = 2*matrix[n*tmp.r+tmp.c]->dead_len[i];
+                            break;
+                        }   
+                }
+            }
+            if(enterdead==-1){
+                if(q.size()>=2){  
+                    a1 = q.front();
+                    a2 = q.back();         
+                    for(link<adjnode>* i= matrix[n*a1.r+a1.c]->adjlist.first;i!=nullptr;i=i->next)
+                        for(link<adjnode>* j=matrix[n*a2.r+a2.c]->adjlist.first;j!=nullptr;j=j->next)
+                            if((i->value.r == j->value.r&&i->value.c == j->value.c)&&(i->value.r!=tmp.r&&i->value.c!=tmp.c)&&(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2)){
+                                a3 = i->value;
+                                save = true;
+                            }                      
                 }
             }
             if(enterdead != -1){
-                queue<adjnode> q_forback;
+                list<adjnode> q_forback;
                 q_forback.push(tmp);
                 tmp = matrix[n*tmp.r+tmp.c]->endstart[enterdead];
                 while(matrix[n*tmp.r+tmp.c]->side!=1){
                     visited[tmp.r][tmp.c] = true;
+                    ans_list.push(tmp);
                     q_forback.push(tmp);
                     for(link<adjnode>* a = matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
                         if(!(a->value.r==tmp.r&&a->value.c==tmp.c))
@@ -397,19 +349,23 @@ public:
                     }
                 }
                 visited[tmp.r][tmp.c] = true;
+                ans_list.push(tmp);
                 for(;!q_forback.empty();q_forback.pop_back()){
                     tmp = q_forback.back();
                     visited[tmp.r][tmp.c] = true;
+                    ans_list.push(tmp);
                 }
                 batt -= battneed;
                 s += battneed;
                 d++;
-                cout << "cc";
             }
             else if(save == true){
                 visited[a1.r][a1.c] = true;
+                ans_list.push(a1);
                 visited[a3.r][a3.c] = true;
+                ans_list.push(a3);
                 visited[a2.r][a2.c] = true;
+                ans_list.push(a2);
                 tmp = a2;
                 batt-=3;
                 s+=3;
@@ -418,6 +374,7 @@ public:
             else if(!q.empty()){
                 tmp = q.back();   //front還是back好
                 visited[tmp.r][tmp.c] = true;
+                ans_list.push(tmp);
                 batt--;
                 s++;
                 q.clean();     
@@ -425,23 +382,24 @@ public:
             else{
                 tmp = matrix[n*tmp.r+tmp.c]->parent;
                 visited[tmp.r][tmp.c] = true;
+                ans_list.push(tmp);
                 batt--;
                 s++;
             }
             d--; 
         }
         step += s;
-        cout << "step: " << step << endl;
-        for(int i=0;i<m;i++){
-            for(int j=0;j<n;j++){
-                cout << visited[i][j] << " ";
-            }
-            cout << endl;
-        }
-        cout << endl;
+        // cout << "step: " << step << endl;
+        // for(int i=0;i<m;i++){
+        //     for(int j=0;j<n;j++){
+        //         cout << visited[i][j] << " ";
+        //     }
+        //     cout << endl;
+        // }
+        // cout << endl;
     }
     void traverse(){
-        
+        SetDeadEnd();
         visited = new bool* [m];    
         for(int i=0;i<m;i++)
             visited[i] = new bool[n];
@@ -466,15 +424,28 @@ public:
             delete[] visited[i];
         delete []visited;
     }
+    void write(){
+        fstream opfile;
+        opfile.open("final.path",ios::out);
+        if(!opfile){
+            cout << "error";
+        }
+        opfile << step;
+        for(;!ans_list.empty();ans_list.pop()){
+            opfile << endl << ans_list.front().r << " " << ans_list.front().c;
+        } 
+        opfile.close(); 
+    }
 private:
     adjnode R;
     int m,n,B;
     ElementNode** matrix;
     bool** visited;
     int num_of_0;
-    queue<adjnode> q_DistanceSorted;
+    list<adjnode> q_DistanceSorted;
     int step;
-    queue<adjnode> q_DeadEnd;
+    list<adjnode> q_DeadEnd;
+    list<adjnode> ans_list;
 };
 
 
@@ -482,6 +453,9 @@ int main(){
     FCR fcr;
     fcr.read();
     fcr.BFS_FindDisranceToR();
-    fcr.test();
+    //fcr.test();
     fcr.traverse();
+    cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;
+    fcr.write();
+    cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;
 }

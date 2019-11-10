@@ -114,7 +114,7 @@ private:
 };
 class FCR{
 public:
-    FCR():m(0),n(0),B(0),num_of_0(0),step(0){}
+    FCR():m(0),n(0),B(0),num_of_0(0){}
     void read()
     {   
         ifstream rdfile;
@@ -267,7 +267,7 @@ public:
                 if(visited[curr->value.r][curr->value.c]==false){
                     visited[curr->value.r][curr->value.c] = true;             
                     matrix[n*curr->value.r+curr->value.c]->distance_to_R = matrix[n*node.r+node.c]->distance_to_R+1;
-                    if(matrix[n*node.r+node.c]->distance_to_R+1>maxdis)maxdis = matrix[n*node.r+node.c]->distance_to_R+1;
+                    if(matrix[n*node.r+node.c]->distance_to_R+1>maxdis)maxdis = matrix[n*node.r+node.c]->distance_to_R+1;//可以刪掉
                     matrix[n*curr->value.r+curr->value.c]->parent = node;
                     q.push(curr->value);
                     q_DistanceSorted.push(curr->value);
@@ -281,21 +281,19 @@ public:
     }
     void go_to(adjnode dest)
     {   
-        int s=0,batt=B;
+        int batt=B;
         list<adjnode> q;
         adjnode tmp(dest.r,dest.c);
         while(!(tmp.r==R.r&&tmp.c==R.c)){
             q.push(tmp);
             tmp = matrix[n*tmp.r+tmp.c]->parent;
         }
-        if(step == 0) ans_list.push(tmp);
+        batt-=q.my_size;
         for(;!q.empty();q.pop_back()){ 
             tmp = q.back();
             visited[tmp.r][tmp.c] = true;
             ans_list.push(tmp);
-            s++;
         }
-        batt -= s;
         int d = matrix[n*tmp.r+tmp.c]->distance_to_R-1;
 
         while(!(tmp.r==R.r&&tmp.c==R.c)){
@@ -323,16 +321,18 @@ public:
                         }   
                 }
             }
-            if(enterdead==-1){
-                if(q.size()>=2){  
-                    a1 = q.front();
-                    a2 = q.back();         
-                    for(link<adjnode>* i= matrix[n*a1.r+a1.c]->adjlist.first;i!=nullptr;i=i->next)
-                        for(link<adjnode>* j=matrix[n*a2.r+a2.c]->adjlist.first;j!=nullptr;j=j->next)
-                            if((i->value.r == j->value.r&&i->value.c == j->value.c)&&(i->value.r!=tmp.r&&i->value.c!=tmp.c)&&(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2)){
-                                a3 = i->value;
-                                save = true;
-                            }                      
+            if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2){
+                if(enterdead==-1){
+                    if(q.size()>=2){  
+                        a1 = q.front();
+                        a2 = q.back();         
+                        for(link<adjnode>* i= matrix[n*a1.r+a1.c]->adjlist.first;i!=nullptr;i=i->next)
+                            for(link<adjnode>* j=matrix[n*a2.r+a2.c]->adjlist.first;j!=nullptr;j=j->next)
+                                if((i->value.r == j->value.r&&i->value.c == j->value.c)&&(i->value.r!=tmp.r&&i->value.c!=tmp.c)){
+                                    a3 = i->value;
+                                    save = true;
+                                }                      
+                    }
                 }
             }
             if(enterdead != -1){
@@ -356,7 +356,6 @@ public:
                     ans_list.push(tmp);
                 }
                 batt -= battneed;
-                s += battneed;
                 d++;
             }
             else if(save == true){
@@ -368,7 +367,6 @@ public:
                 ans_list.push(a2);
                 tmp = a2;
                 batt-=3;
-                s+=3;
                 q.clean();
             }
             else if(!q.empty()){
@@ -376,7 +374,6 @@ public:
                 visited[tmp.r][tmp.c] = true;
                 ans_list.push(tmp);
                 batt--;
-                s++;
                 q.clean();     
             }
             else{
@@ -384,11 +381,9 @@ public:
                 visited[tmp.r][tmp.c] = true;
                 ans_list.push(tmp);
                 batt--;
-                s++;
             }
             d--; 
         }
-        step += s;
         // cout << "step: " << step << endl;
         // for(int i=0;i<m;i++){
         //     for(int j=0;j<n;j++){
@@ -430,7 +425,8 @@ public:
         if(!opfile){
             cout << "error";
         }
-        opfile << step;
+        opfile << ans_list.size() <<endl;
+        opfile << R.r << " " << R.c;
         for(;!ans_list.empty();ans_list.pop()){
             opfile << endl << ans_list.front().r << " " << ans_list.front().c;
         } 
@@ -443,7 +439,6 @@ private:
     bool** visited;
     int num_of_0;
     list<adjnode> q_DistanceSorted;
-    int step;
     list<adjnode> q_DeadEnd;
     list<adjnode> ans_list;
 };

@@ -98,7 +98,7 @@ class ElementNode{
 friend class FCR;
 public:
     ElementNode(){}
-    ElementNode(int rr,int cc,char dd):r(rr),c(cc),data(dd),side(0),distance_to_R(0),dead_end(0){}
+    ElementNode(int rr,int cc,char dd):r(rr),c(cc),data(dd),side(0),distance_to_R(0),dead_end(0),save_point(0){}
 
 private:   
     list<adjnode> adjlist;
@@ -110,6 +110,7 @@ private:
     int dead_len[3] = {0};
     adjnode endstart[3];
     adjnode parent;
+    int save_point;
 
 };
 class FCR{
@@ -208,6 +209,42 @@ public:
             matrix[n*D.r+D.c]->dead_end++;        
         }    
     }
+    int SavePointUtil(int a,int b,int c,int d)
+    {
+        if(a!=0&&b!=0&&c!=0&&d!=0){
+            if(a==d){
+                if(a-b==1&&c-b==2)
+                    return 3;
+                else if(b-a==1&&b-c==2)
+                    return 2;
+                else
+                    return 0;
+            }
+            else if(b==c){
+                if(d-b==1&&d-a==2)
+                    return 4;
+                else if(a-b==1&&a-d==2)
+                    return 1;
+                else 
+                    return 0;
+            }
+        }
+    }
+    void SetSavePoint()
+    {
+        for(int i=1;i<m-1;i++){
+            for(int j=1;j<n-1;j++){
+                if(SavePointUtil(matrix[n*i+j]->distance_to_R,matrix[n*i+j+1]->distance_to_R,matrix[n*(i+1)+j]->distance_to_R,matrix[n*(i+1)+j+1]->distance_to_R)==1)
+                    matrix[n*i+j]->save_point = 1;
+                else if(SavePointUtil(matrix[n*i+j]->distance_to_R,matrix[n*i+j+1]->distance_to_R,matrix[n*(i+1)+j]->distance_to_R,matrix[n*(i+1)+j+1]->distance_to_R)==2)
+                    matrix[n*i+j+1]->save_point = 2;
+                else if(SavePointUtil(matrix[n*i+j]->distance_to_R,matrix[n*i+j+1]->distance_to_R,matrix[n*(i+1)+j]->distance_to_R,matrix[n*(i+1)+j+1]->distance_to_R)==3)
+                    matrix[n*(i+1)+j]->save_point = 3;
+                else if(SavePointUtil(matrix[n*i+j]->distance_to_R,matrix[n*i+j+1]->distance_to_R,matrix[n*(i+1)+j]->distance_to_R,matrix[n*(i+1)+j+1]->distance_to_R)==4)
+                    matrix[n*(i+1)+j+1]->save_point = 4;
+            }
+        }
+    }
     void test()
     {
         fstream d_file;
@@ -304,10 +341,10 @@ public:
                     }
                 }
             }
-            adjnode a1;
-            adjnode a2;         //選哪個好
-            adjnode a3;
-            bool save = false;
+            // adjnode a1;
+            // adjnode a2;         //選哪個好
+            // adjnode a3;
+            int save = -1;
             int enterdead = -1;
 
             int battneed;
@@ -321,19 +358,22 @@ public:
                         }   
                 }
             }
-            if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2){
-                if(enterdead==-1){
-                    if(q.size()>=2){  
-                        a1 = q.front();
-                        a2 = q.back();         
-                        for(link<adjnode>* i= matrix[n*a1.r+a1.c]->adjlist.first;i!=nullptr;i=i->next)
-                            for(link<adjnode>* j=matrix[n*a2.r+a2.c]->adjlist.first;j!=nullptr;j=j->next)
-                                if((i->value.r == j->value.r&&i->value.c == j->value.c)&&(i->value.r!=tmp.r&&i->value.c!=tmp.c)){
-                                    a3 = i->value;
-                                    save = true;
-                                }                      
-                    }
-                }
+            // if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2){
+            //     if(enterdead==-1){
+            //         if(q.size()>=2){  
+            //             a1 = q.front();
+            //             a2 = q.back();         
+            //             for(link<adjnode>* i= matrix[n*a1.r+a1.c]->adjlist.first;i!=nullptr;i=i->next)
+            //                 for(link<adjnode>* j=matrix[n*a2.r+a2.c]->adjlist.first;j!=nullptr;j=j->next)
+            //                     if((i->value.r == j->value.r&&i->value.c == j->value.c)&&(i->value.r!=tmp.r&&i->value.c!=tmp.c)){
+            //                         a3 = i->value;
+            //                         save = true;
+            //                     }                      
+            //         }
+            //     }
+            // }
+            else if( batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2 && matrix[n*tmp.r+tmp.c]->save_point!=0){
+                save = matrix[n*tmp.r+tmp.c]->save_point;
             }
             if(enterdead != -1){
                 list<adjnode> q_forback;
@@ -358,23 +398,62 @@ public:
                 batt -= battneed;
                 d++;
             }
-            else if(save == true){
-                visited[a1.r][a1.c] = true;
-                ans_list.push(a1);
-                visited[a3.r][a3.c] = true;
-                ans_list.push(a3);
-                visited[a2.r][a2.c] = true;
-                ans_list.push(a2);
-                tmp = a2;
-                batt-=3;
-                q.clean();
-            }
-            else if(!q.empty()){
+            else if(q.size() == 1){
                 tmp = q.back();   //front還是back好
                 visited[tmp.r][tmp.c] = true;
                 ans_list.push(tmp);
                 batt--;
                 q.clean();     
+            }
+            else if(q.size()>1&&save != -1){
+                adjnode a;
+                if(save==1){
+                    a.r = tmp.r; a.c = tmp.c+1;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                    a.r = tmp.r+1; a.c = tmp.c+1;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                    a.r = tmp.r+1; a.c = tmp.c;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                }
+                else if(save==2){
+                    a.r = tmp.r; a.c = tmp.c-1;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                    a.r = tmp.r+1; a.c = tmp.c-1;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                    a.r = tmp.r+1; a.c = tmp.c;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                }
+                else if(save==3){
+                    a.r = tmp.r; a.c = tmp.c+1;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                    a.r = tmp.r-1; a.c = tmp.c+1;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                    a.r = tmp.r-1; a.c = tmp.c;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                }
+                else if(save==4){
+                    a.r = tmp.r; a.c = tmp.c-1;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                    a.r = tmp.r-1; a.c = tmp.c-1;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                    a.r = tmp.r-1; a.c = tmp.c;
+                    visited[a.r][a.c] = true;
+                    ans_list.push(a);
+                }
+                tmp = a;
+                batt-=3;
+                q.clean();
             }
             else{
                 tmp = matrix[n*tmp.r+tmp.c]->parent;
@@ -384,17 +463,24 @@ public:
             }
             d--; 
         }
-        // cout << "step: " << step << endl;
+        // int g=1;
+        // fstream d_file;
+        // d_file.open("trace.data",ios::out);
+        // d_file << "step: " << g << endl;
+        // g++;
         // for(int i=0;i<m;i++){
         //     for(int j=0;j<n;j++){
-        //         cout << visited[i][j] << " ";
+        //         d_file << visited[i][j] << " ";
         //     }
-        //     cout << endl;
+        //     d_file << endl;
         // }
-        // cout << endl;
+        // d_file << endl;
+        // d_file.close();
     }
     void traverse(){
         SetDeadEnd();
+        SetSavePoint();
+        cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;
         visited = new bool* [m];    
         for(int i=0;i<m;i++)
             visited[i] = new bool[n];

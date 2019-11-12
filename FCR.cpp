@@ -432,13 +432,13 @@ public:
             //         }
             //     }
             // }
-            else if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=12 && matrix[n*tmp.r+tmp.c]->save_point_3!=0){
+            if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=12 && matrix[n*tmp.r+tmp.c]->save_point_3!=0){
                 save3 = matrix[n*tmp.r+tmp.c]->save_point_3;
             }
-            else if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=6 && matrix[n*tmp.r+tmp.c]->save_point_2!=0){
+            if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=6 && matrix[n*tmp.r+tmp.c]->save_point_2!=0){
                 save2 = matrix[n*tmp.r+tmp.c]->save_point_2;
             }
-            else if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2 && matrix[n*tmp.r+tmp.c]->save_point!=0){
+            if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2 && matrix[n*tmp.r+tmp.c]->save_point!=0){
                 save = matrix[n*tmp.r+tmp.c]->save_point;
             }
             if(enterdead != -1){
@@ -651,6 +651,7 @@ public:
             }
             d--; 
         }
+        //cout << batt << endl;
         // static int g=1;
         // fstream d_file;
         // d_file.open("trace.data",ios::out|ios::app);
@@ -666,9 +667,6 @@ public:
         // d_file.close();
     }
     void traverse(){
-        fstream d_file;
-        d_file.open("trace.data",ios::out);
-        d_file.close();
         SetDeadEnd();
         SetSavePoint();
         cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;
@@ -678,11 +676,12 @@ public:
         for(int i=0;i<m;i++)
             for(int j=0;j<n;j++)
                 visited[i][j] = false;
+                cout << endl;
         while(!q_DistanceSorted.empty()){
-            adjnode node = q_DistanceSorted.back();
-            q_DistanceSorted.pop_back();
+            adjnode node = q_DistanceSorted.back(); 
             if(visited[node.r][node.c]==false)
                 go_to(node);
+            q_DistanceSorted.pop_back();
         }
         // adjnode a(1,9);
         // go_to(a);
@@ -726,7 +725,7 @@ int main(){
     fcr.read();
     fcr.BFS_FindDisranceToR();
     fcr.traverse();
-    fcr.test();
+    //fcr.test();
     cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;
     fcr.write();
     cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;

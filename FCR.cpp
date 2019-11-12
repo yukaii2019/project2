@@ -98,7 +98,9 @@ class ElementNode{
 friend class FCR;
 public:
     ElementNode(){}
-    ElementNode(int rr,int cc,char dd):r(rr),c(cc),data(dd),side(0),distance_to_R(0),dead_end(0),save_point(0),save_point_2(0),save_point_3(0){}
+    ElementNode(int rr,int cc,char dd):r(rr),c(cc),data(dd),side(0),distance_to_R(0),dead_end(0),save_point(0),save_point_2(0),save_point_3(0){
+        for(int i=0;i<10;i++) savept[i] =-1;
+    }
 
 private:   
     list<adjnode> adjlist;
@@ -113,7 +115,7 @@ private:
     int save_point;
     int save_point_2;
     int save_point_3;
-
+    int savept[10];
 };
 class FCR{
 public:
@@ -121,7 +123,7 @@ public:
     void read()
     {   
         ifstream rdfile;
-        rdfile.open("floor.data",ios::in);
+        rdfile.open("floor5.data",ios::in);
         if(!rdfile){
            cout<<"error";
         }
@@ -261,22 +263,39 @@ public:
         }
         return 0;
     }
+    int SavePointUtil_N(int N,int rr,int cc)
+    {
+        int re1=0,re2=0,re3=0,re4=0;
+        for(int i=0;i<N;i++){
+            for(int j=0;j<N;j++){
+                if(matrix[n*(rr+i)+cc+j]->distance_to_R==0)break;
+                if(matrix[n*rr+cc]->distance_to_R-matrix[n*(rr+i)+cc+j]->distance_to_R==i+j)                       re1++;
+                if(matrix[n*rr+(cc+N-1)]->distance_to_R-matrix[n*(rr+i)+(cc+N-1-j)]->distance_to_R==i+j)           re2++;
+                if(matrix[n*(rr+N-1)+cc]->distance_to_R-matrix[n*(rr+N-1-i)+cc+j]->distance_to_R==i+j)             re3++;
+                if(matrix[n*(rr+N-1)+(cc+N-1)]->distance_to_R-matrix[n*(rr+N-1-i)+(cc+N-1-j)]->distance_to_R==i+j) re4++;
+            }
+        }
+        if(re1==N*N)      return 1;
+        else if(re2==N*N) return 2;
+        else if(re3==N*N) return 3;
+        else if(re4==N*N) return 4;
+        else return 0;
+    }
     void SetSavePoint()
     {
         for(int i=1;i<m-2;i++){
             for(int j=1;j<n-2;j++){
-                if(SavePointUtil(matrix[n*i+j]->distance_to_R,matrix[n*i+j+1]->distance_to_R,matrix[n*(i+1)+j]->distance_to_R,matrix[n*(i+1)+j+1]->distance_to_R)==1)
+                int s = SavePointUtil_N(2,i,j);
+                if(s==1)
                     matrix[n*i+j]->save_point = 1;
-                else if(SavePointUtil(matrix[n*i+j]->distance_to_R,matrix[n*i+j+1]->distance_to_R,matrix[n*(i+1)+j]->distance_to_R,matrix[n*(i+1)+j+1]->distance_to_R)==2)
+                else if(s==2)
                     matrix[n*i+j+1]->save_point = 2;
-                else if(SavePointUtil(matrix[n*i+j]->distance_to_R,matrix[n*i+j+1]->distance_to_R,matrix[n*(i+1)+j]->distance_to_R,matrix[n*(i+1)+j+1]->distance_to_R)==3)
+                else if(s==3)
                     matrix[n*(i+1)+j]->save_point = 3;
-                else if(SavePointUtil(matrix[n*i+j]->distance_to_R,matrix[n*i+j+1]->distance_to_R,matrix[n*(i+1)+j]->distance_to_R,matrix[n*(i+1)+j+1]->distance_to_R)==4)
+                else if(s==4)
                     matrix[n*(i+1)+j+1]->save_point = 4;
                 if(i<m-3&&j<n-3){
-                    int a = SavePointUtil_2(matrix[n*i+j]->distance_to_R,matrix[n*i+j+1]->distance_to_R,matrix[n*i+j+2]->distance_to_R,
-                                            matrix[n*(i+1)+j]->distance_to_R,matrix[n*(i+1)+j+1]->distance_to_R,matrix[n*(i+1)+j+2]->distance_to_R,
-                                            matrix[n*(i+2)+j]->distance_to_R,matrix[n*(i+2)+j+1]->distance_to_R,matrix[n*(i+2)+j+2]->distance_to_R);
+                    int a = SavePointUtil_N(3,i,j);
                     if(a==1)
                         matrix[n*i+j]->save_point_2 = 1;
                     else if(a==2)
@@ -287,10 +306,7 @@ public:
                         matrix[n*(i+2)+j+2]->save_point_2 = 4;
                 }
                 if(i<m-4&&j<n-4){
-                    int a = SavePointUtil_3(matrix[n*i+j]->distance_to_R,matrix[n*i+j+1]->distance_to_R,matrix[n*i+j+2]->distance_to_R,matrix[n*i+j+3]->distance_to_R,
-                                            matrix[n*(i+1)+j]->distance_to_R,matrix[n*(i+1)+j+1]->distance_to_R,matrix[n*(i+1)+j+2]->distance_to_R,matrix[n*(i+1)+j+3]->distance_to_R,
-                                            matrix[n*(i+2)+j]->distance_to_R,matrix[n*(i+2)+j+1]->distance_to_R,matrix[n*(i+2)+j+2]->distance_to_R,matrix[n*(i+2)+j+3]->distance_to_R,
-                                            matrix[n*(i+3)+j]->distance_to_R,matrix[n*(i+3)+j+1]->distance_to_R,matrix[n*(i+3)+j+2]->distance_to_R,matrix[n*(i+3)+j+3]->distance_to_R);
+                    int a = SavePointUtil_N(4,i,j);
                     if(a==1)
                         matrix[n*i+j]->save_point_3 = 1;
                     else if(a==2)
@@ -725,7 +741,7 @@ int main(){
     fcr.read();
     fcr.BFS_FindDisranceToR();
     fcr.traverse();
-    //fcr.test();
+    fcr.test();
     cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;
     fcr.write();
     cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;

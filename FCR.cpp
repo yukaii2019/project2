@@ -99,7 +99,7 @@ friend class FCR;
 public:
     ElementNode(){}
     ElementNode(int rr,int cc,char dd):r(rr),c(cc),data(dd),side(0),distance_to_R(0),dead_end(0),save_point(0),save_point_2(0),save_point_3(0){
-        for(int i=0;i<3;i++) savept[i] = 0;
+        for(int i=0;i<4;i++) savept[i] = 0;
     }
 
 private:   
@@ -115,7 +115,7 @@ private:
     int save_point;
     int save_point_2;
     int save_point_3;
-    int savept[3];
+    int savept[4];
 };
 class FCR{
 public:
@@ -123,7 +123,7 @@ public:
     void read()
     {   
         ifstream rdfile;
-        rdfile.open("floor1.data",ios::in);
+        rdfile.open("floor.data",ios::in);
         if(!rdfile){
            cout<<"error";
         }
@@ -285,7 +285,7 @@ public:
     {
         for(int i=1;i<m-2;i++){
             for(int j=1;j<n-2;j++){
-                for(int k=2;k<=4;k++){
+                for(int k=2;k<=5;k++){
                     if(i<m-k&&j<n-k){
                         int s = SavePointUtil_N(k,i,j);
                         if(s==1)
@@ -409,8 +409,8 @@ public:
             // adjnode a1;
             // adjnode a2;         //選哪個好
             // adjnode a3;
-            int save[3];
-            for(int i=0;i<3;i++)save[i]=-1;
+            int save[4];
+            for(int i=0;i<4;i++)save[i]=-1;
             // int save = -1;
             // int save2 = -1;
             // int save3 = -1;
@@ -442,13 +442,12 @@ public:
             //     }
             // }
             bool issave=false;
-            for(int i=2;i<=4;i++){
+            for(int i=5;i>=2;i--){
                 if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=i*i-i && matrix[n*tmp.r+tmp.c]->savept[i-2]!=0){
                     save[i-2] = matrix[n*tmp.r+tmp.c]->savept[i-2];
-                    issave==true;
+                    issave=true;
                 }
             }
-            cout <<"b";
             // if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=12 && matrix[n*tmp.r+tmp.c]->savept[2]!=0){
             //     save3 = matrix[n*tmp.r+tmp.c]->savept[2];
             // }
@@ -489,9 +488,8 @@ public:
                 q.clean();     
             }
             else if(q.size()>1&&issave){
-                for(int i=2;i>=0;i--){
+                for(int i=3;i>=0;i--){
                     if(save[i]!=-1){
-                        cout << "cc";
                         adjnode a;
                         int minus_r=1,minus_c=1;
                         if(save[i]==2)minus_c=-1;
@@ -500,7 +498,6 @@ public:
                         if(i%2==0){
                             for(int k=1;k<=i+1;k++){
                                 a.r = tmp.r;   a.c = tmp.c+minus_c*k; visited[a.r][a.c] = true; ans_list.push(a);
-                                cout << a.r << " " << a.c <<endl;
                             }
                             for(int l=1;l<=i+1;l++){
                                 if(l%2==1){
@@ -733,7 +730,6 @@ public:
                 batt--;
             }
             d--; 
-             cout << "aa";
         }
         //cout << batt << endl;
         // static int g=1;
@@ -753,6 +749,9 @@ public:
     void traverse(){
         SetDeadEnd();
         SetSavePoint();
+        fstream d_file;
+        d_file.open("trace.data",ios::out);
+        d_file.close();
         cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;
         visited = new bool* [m];    
         for(int i=0;i<m;i++)

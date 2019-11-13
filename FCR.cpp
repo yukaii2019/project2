@@ -99,7 +99,7 @@ friend class FCR;
 public:
     ElementNode(){}
     ElementNode(int rr,int cc,char dd):r(rr),c(cc),data(dd),side(0),distance_to_R(0),dead_end(0),save_point(0),save_point_2(0),save_point_3(0){
-        for(int i=0;i<4;i++) savept[i] = 0;
+        for(int i=0;i<10;i++) savept[i] = 0;
     }
 
 private:   
@@ -115,7 +115,7 @@ private:
     int save_point;
     int save_point_2;
     int save_point_3;
-    int savept[4];
+    int savept[10];
 };
 class FCR{
 public:
@@ -123,7 +123,7 @@ public:
     void read()
     {   
         ifstream rdfile;
-        rdfile.open("floor.data",ios::in);
+        rdfile.open("floor5.data",ios::in);
         if(!rdfile){
            cout<<"error";
         }
@@ -213,56 +213,6 @@ public:
             matrix[n*D.r+D.c]->dead_end++;        
         }    
     }
-    int SavePointUtil(const int& a,const int& b,const int& c,const int& d)
-    {
-        if(a!=0&&b!=0&&c!=0&&d!=0){
-            if(a==d){
-                if(a-b==1&&c-b==2)
-                    return 3;
-                else if(b-a==1&&b-c==2)
-                    return 2;
-                else
-                    return 0;
-            }
-            else if(b==c){
-                if(d-b==1&&d-a==2)
-                    return 4;
-                else if(a-b==1&&a-d==2)
-                    return 1;
-                else 
-                    return 0;
-            }
-        }
-    }
-    int SavePointUtil_2(const int& a,const int& b,const int& c,const int& d,const int& e,const int& f,const int& g,const int& h,const int& i)
-    {
-        if(a!=0&&b!=0&&c!=0&&d!=0&&e!=0&&f!=0&&g!=0&&h!=0&&i!=0){
-            if(a-b==1&&a-c==2&&a-d==1&&a-e==2&&a-f==3&&a-g==2&&a-h==3&&a-i==4)
-                return 1;
-            else if(c-b==1&&c-a==2&&c-f==1&&c-e==2&&c-d==3&&c-i==2&&c-h==3&&c-g==4)
-                return 2;
-            else if(g-h==1&&g-i==2&&g-d==1&&g-e==2&&g-f==3&&g-a==2&&g-b==3&&g-c==4)
-                return 3;
-            else if(i-h==1&&i-g==2&&i-f==1&&i-e==2&&i-d==3&&i-c==2&&i-b==3&&i-a==4)
-                return 4;
-        }
-        return 0;
-    }
-    int SavePointUtil_3(const int& a1,const int& a2,const int& a3,const int& a4,const int& a5,const int& a6,const int& a7,const int& a8,
-                        const int& a9,const int& a10,const int& a11,const int& a12,const int& a13,const int& a14,const int& a15,const int& a16)
-    {
-        if(a1!=0&&a2!=0&&a3!=0&&a4!=0&&a5!=0&&a6!=0&&a7!=0&&a8!=0&&a9!=0&&a10!=0&&a11!=0&&a12!=0&&a13!=0&&a14!=0&&a15!=0&&a16!=0){
-            if(a1-a2==1&&a1-a3==2&&a1-a4==3&&a1-a5==1&&a1-a6==2&&a1-a7==3&&a1-a8==4&&a1-a9==2&&a1-a10==3&&a1-a11==4&&a1-a12==5&&a1-a13==3&& a1-a14==4&&a1-a15==5&&a1-a16==6)
-                return 1;
-            else if(a4-a3==1&&a4-a2==2&&a4-a1==3&&  a4-a8==1&&a4-a7==2&&a4-a6==3&&a4-a5==4&&  a4-a12==2&&a4-a11==3&&a4-a10==4&&a4-a9==5&&a4-a16==3&&  a4-a15==4&&a4-a14==5&&a4-a13==6)
-                return 2; 
-            else if(a13-a14==1&&a13-a15==2&&a13-a16==3&&  a13-a9==1&&a13-a10==2&&a13-a11==3&&a13-a12==4&&  a13-a5==2&&a13-a6==3&&a13-a7==4&&a13-a8==5&&  a13-a1==3&&a13-a2==4&&a13-a3==5&&a13-a4==6)
-                return 3;
-            else if(a16-a15==1&&a16-a14==2&&a16-a13==3&&  a16-a12==1&&a16-a11==2&&a16-a10==3&&a16-a9==4&&  a16-a8==2&&a16-a7==3&&a16-a6==4&&a16-a5==5&&  a16-a4==3&&a16-a3==4&&a16-a2==5&&a16-a1==6)
-                return 4;  
-        }
-        return 0;
-    }
     int SavePointUtil_N(int N,int rr,int cc)
     {
         int re1=0,re2=0,re3=0,re4=0;
@@ -285,7 +235,7 @@ public:
     {
         for(int i=1;i<m-2;i++){
             for(int j=1;j<n-2;j++){
-                for(int k=2;k<=5;k++){
+                for(int k=2;k<=11;k++){
                     if(i<m-k&&j<n-k){
                         int s = SavePointUtil_N(k,i,j);
                         if(s==1)
@@ -296,7 +246,6 @@ public:
                             matrix[n*(i+k-1)+j]->savept[k-2] = 3;
                         else if(s==4)
                             matrix[n*(i+k-1)+j+k-1]->savept[k-2] = 4;
-
                     }
                 }
             }
@@ -316,21 +265,21 @@ public:
         d_file << endl;   
         for(int i=0;i<m;i++){
             for(int j=0;j<n;j++){
-                d_file << setw(4) << matrix[i*n+j]->savept[0] << " ";
+                d_file << setw(4) << matrix[i*n+j]->savept[3] << " ";
             }
             d_file << endl;
         }
         d_file << endl;
         for(int i=0;i<m;i++){
             for(int j=0;j<n;j++){
-                d_file << setw(4) << matrix[i*n+j]->savept[1] << " ";
+                d_file << setw(4) << matrix[i*n+j]->savept[4] << " ";
             }
             d_file << endl;
         }
         d_file << endl;
         for(int i=0;i<m;i++){
             for(int j=0;j<n;j++){
-                d_file << setw(4) << matrix[n*i+j]->savept[2] << " ";
+                d_file << setw(4) << matrix[n*i+j]->savept[5] << " ";
             }
             d_file << endl;
         }
@@ -409,8 +358,8 @@ public:
             // adjnode a1;
             // adjnode a2;         //選哪個好
             // adjnode a3;
-            int save[4];
-            for(int i=0;i<4;i++)save[i]=-1;
+            int save[10];
+            for(int i=0;i<10;i++)save[i]=-1;
             // int save = -1;
             // int save2 = -1;
             // int save3 = -1;
@@ -427,36 +376,15 @@ public:
                         }   
                 }
             }
-            // if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2){
-            //     if(enterdead==-1){
-            //         if(q.size()>=2){  
-            //             a1 = q.front();
-            //             a2 = q.back();         
-            //             for(link<adjnode>* i= matrix[n*a1.r+a1.c]->adjlist.first;i!=nullptr;i=i->next)
-            //                 for(link<adjnode>* j=matrix[n*a2.r+a2.c]->adjlist.first;j!=nullptr;j=j->next)
-            //                     if((i->value.r == j->value.r&&i->value.c == j->value.c)&&(i->value.r!=tmp.r&&i->value.c!=tmp.c)){
-            //                         a3 = i->value;
-            //                         save = true;
-            //                     }                      
-            //         }
-            //     }
-            // }
+
             bool issave=false;
-            for(int i=5;i>=2;i--){
+            for(int i=11;i>=2;i--){
                 if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=i*i-i && matrix[n*tmp.r+tmp.c]->savept[i-2]!=0){
                     save[i-2] = matrix[n*tmp.r+tmp.c]->savept[i-2];
                     issave=true;
+                    break;
                 }
             }
-            // if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=12 && matrix[n*tmp.r+tmp.c]->savept[2]!=0){
-            //     save3 = matrix[n*tmp.r+tmp.c]->savept[2];
-            // }
-            // if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=6 && matrix[n*tmp.r+tmp.c]->savept[1]!=0){
-            //     save2 = matrix[n*tmp.r+tmp.c]->savept[1];
-            // }
-            // if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=2 && matrix[n*tmp.r+tmp.c]->savept[0]!=0){
-            //     save = matrix[n*tmp.r+tmp.c]->savept[0];
-            // }
             if(enterdead != -1){
                 list<adjnode> q_forback;
                 q_forback.push(tmp);
@@ -488,7 +416,7 @@ public:
                 q.clean();     
             }
             else if(q.size()>1&&issave){
-                for(int i=3;i>=0;i--){
+                for(int i=9;i>=0;i--){
                     if(save[i]!=-1){
                         adjnode a;
                         int minus_r=1,minus_c=1;
@@ -550,179 +478,6 @@ public:
                     }
                 }
             }
-           
-            // else if(q.size()>1&&save[2]!=-1){
-            //     adjnode a;
-            //     if(save[2]==1){
-            //         a.r = tmp.r;   a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c+3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c+3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c+3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+3; a.c = tmp.c+3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+3; a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+3; a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+3; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //     }
-            //     else if(save[2]==2){
-            //         a.r = tmp.r;   a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c-3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c-3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c-3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+3; a.c = tmp.c-3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+3; a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+3; a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+3; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //     }
-            //     else if(save[2]==3){
-            //         a.r = tmp.r;   a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c+3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c+3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c+3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-3; a.c = tmp.c+3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-3; a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-3; a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-3; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //     }
-            //     else if(save[2]==4){
-            //         a.r = tmp.r;   a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c-3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c-3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c-3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-3; a.c = tmp.c-3; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-3; a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-3; a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-3; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //     }
-            //     tmp = a;
-            //     d-=2;
-            //     batt-=15;
-            //     q.clean();
-            // }
-            // else if(q.size()>1&&save[1]!=-1){
-            //     adjnode a;
-            //     if(save[1]==1){
-            //         a.r = tmp.r;   a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //     }
-            //     else if(save[1]==2){
-            //         a.r = tmp.r;   a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r+2; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //     }
-            //     else if(save[1]==3){
-            //         a.r = tmp.r;   a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c+2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c+1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //     }
-            //     else if(save[1]==4){
-            //         a.r = tmp.r;   a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r;   a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c-2; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c-1; visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //         a.r = tmp.r-2; a.c = tmp.c;   visited[a.r][a.c] = true; ans_list.push(a);
-            //     }
-            //     tmp = a;
-            //     d--;
-            //     batt-=8;
-            //     q.clean();
-            // }
-            // else if(q.size()>1&&save[0] != -1){
-            //     adjnode a;
-            //     if(save[0]==1){
-            //         a.r = tmp.r; a.c = tmp.c+1;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c+1;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //     }
-            //     else if(save[0]==2){
-            //         a.r = tmp.r; a.c = tmp.c-1;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c-1;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //         a.r = tmp.r+1; a.c = tmp.c;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //     }
-            //     else if(save[0]==3){
-            //         a.r = tmp.r; a.c = tmp.c+1;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c+1;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //     }
-            //     else if(save[0]==4){
-            //         a.r = tmp.r; a.c = tmp.c-1;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c-1;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //         a.r = tmp.r-1; a.c = tmp.c;
-            //         visited[a.r][a.c] = true;
-            //         ans_list.push(a);
-            //     }
-            //     tmp = a;
-            //     batt-=3;
-            //     q.clean();
-            // }
             else{
                 tmp = matrix[n*tmp.r+tmp.c]->parent;
                 visited[tmp.r][tmp.c] = true;
@@ -731,20 +486,20 @@ public:
             }
             d--; 
         }
-        //cout << batt << endl;
-        // static int g=1;
-        // fstream d_file;
-        // d_file.open("trace.data",ios::out|ios::app);
-        // d_file << "step: " << g << endl;
-        // g++;
-        // for(int i=0;i<m;i++){
-        //     for(int j=0;j<n;j++){
-        //         d_file << visited[i][j];
-        //     }
-        //     d_file << endl;
-        // }
-        // d_file << endl;
-        // d_file.close();
+         cout << batt << endl;
+        static int g=1;
+        fstream d_file;
+        d_file.open("trace.data",ios::out|ios::app);
+        d_file << "step: " << g << endl;
+        g++;
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                d_file << visited[i][j];
+            }
+            d_file << endl;
+        }
+        d_file << endl;
+        d_file.close();
     }
     void traverse(){
         SetDeadEnd();

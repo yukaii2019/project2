@@ -123,7 +123,7 @@ public:
     void read()
     {   
         ifstream rdfile;
-        rdfile.open("floor.data",ios::in);
+        rdfile.open("floor2.data",ios::in);
         if(!rdfile){
            cout<<"error";
         }
@@ -335,6 +335,8 @@ public:
     {
         int batt = B;
         list<adjnode> q;
+        list<adjnode> s_haspass;
+        list<adjnode> s_forDFS;      
         adjnode tmp(dest.r,dest.c);
         while(!(tmp.r==R.r&&tmp.c==R.c)){
             q.push(tmp);
@@ -342,12 +344,13 @@ public:
         }
         batt-=q.my_size;
         for(;!q.empty();q.pop_back()){ 
+            s_haspass.push(tmp);
             tmp = q.back();
             visited[tmp.r][tmp.c] = true;
             ans_list.push(tmp);
         }
         int d = matrix[n*tmp.r+tmp.c]->distance_to_R;
-        while(batt>B/2){
+        while(batt>d){
             int issave = -1;
             int save[10];
             for(int i=0;i<10;i++)save[i]=-1;
@@ -365,12 +368,13 @@ public:
                         q.push(a->value);
                 }
             }
-            if(q.size()==1&&batt-1>=B/2){
+            if(q.size()==1&&batt-1>=matrix[n*q.back().r+q.back().c]->distance_to_R){
+                s_haspass.push(tmp);
                 tmp = q.back();
                 visited[tmp.r][tmp.c] = true;
                 ans_list.push(tmp);
                 batt--;
-                d++;
+                //d++;
                 q.clean();
             }
             else if(q.size()>1&&issave!=-1){
@@ -380,31 +384,59 @@ public:
                 if(save[i]==2)minus_c=-1;
                 else if(save[i]==3)minus_r=-1;
                 else if(save[i]==4){minus_r=-1;minus_c=-1;}
+                    
+                //     a.r = tmp.r;   a.c = tmp.c-minus_c*1;  
+                //     if(matrix[n*a.r+a.c]->data!='$') s_forDFS.push(a);
+                    
+                // for(int k=1;k<=i+1;k++){
+                //     a.r = tmp.r-minus_r*1;   a.c = tmp.c+minus_c*k;  
+                //     if(matrix[n*a.r+a.c]->data!='$') s_forDFS.push(a);
+                // }
+                // for(int k=0;k<=i+1;k++){
+                //     a.r = tmp.r+minus_r*k;   a.c = tmp.c+minus_c*(i+2); 
+                //     if(matrix[n*a.r+a.c]->data!='$') s_forDFS.push(a);
+                // }
+                // for(int k=i+1;k>=1;k--){
+                //     a.r = tmp.r+minus_r*(i+2);   a.c = tmp.c+minus_c*k;  
+                //     if(matrix[n*a.r+a.c]->data!='$') s_forDFS.push(a);
+                // }
+                // for(int k=1;k<=i+1;k++){
+                //     a.r = tmp.r+minus_r*k;   a.c = tmp.c-minus_c*1;  
+                //     if(matrix[n*a.r+a.c]->data!='$') s_forDFS.push(a);
+                // }
+                s_haspass.push(tmp);
                 if(i%2==0){
                     for(int k=1;k<=i+1;k++){
-                        a.r = tmp.r;   a.c = tmp.c+minus_c*k; visited[a.r][a.c] = true; ans_list.push(a);
+                        a.r = tmp.r;   a.c = tmp.c+minus_c*k; visited[a.r][a.c] = true; ans_list.push(a); s_haspass.push(a);
                     }
                     for(int l=1;l<=i+1;l++){
                         if(l%2==1){
                             for(int k=i+1;k>=i;k--){
-                                a.r = tmp.r+minus_r*l;   a.c = tmp.c+minus_c*k; visited[a.r][a.c] = true; ans_list.push(a);
+                                a.r = tmp.r+minus_r*l;   a.c = tmp.c+minus_c*k; visited[a.r][a.c] = true; ans_list.push(a); 
+                                if(l==i+1) s_haspass.push(a);
+                                else if(k==i+1) s_haspass.push(a);   
                             }
                         }
                         else{
                             for(int k=i;k<=i+1;k++){
-                                a.r = tmp.r+minus_r*l;   a.c = tmp.c+minus_c*k; visited[a.r][a.c] = true; ans_list.push(a);
+                                a.r = tmp.r+minus_r*l;   a.c = tmp.c+minus_c*k; visited[a.r][a.c] = true; ans_list.push(a); 
+                                if(k==i+1)s_haspass.push(a);
                             }
                         }
                     }
                     for(int l=i-1;l>=0;l--){
                         if(l%2==1){
                             for(int k=i+1;k>=1;k--){
-                                a.r = tmp.r+minus_r*k;   a.c = tmp.c+minus_c*l; visited[a.r][a.c] = true; ans_list.push(a);
+                                a.r = tmp.r+minus_r*k;   a.c = tmp.c+minus_c*l; visited[a.r][a.c] = true; ans_list.push(a); 
+                                if(l==1) s_haspass.push(a);
+                                else if(k==i+1)s_haspass.push(a);
                             }
                         }
                         else{
                             for(int k=1;k<=i+1;k++){
                                 a.r = tmp.r+minus_r*k;   a.c = tmp.c+minus_c*l; visited[a.r][a.c] = true; ans_list.push(a);
+                                if(l==0&&k!=i+1) s_haspass.push(a);
+                                else if(k==i+1)s_haspass.push(a);
                             }
                         }
                     }
@@ -412,70 +444,87 @@ public:
                 }
                 else if(i%2==1){
                     for(int k=1;k<=i+1;k++){
-                        a.r = tmp.r;   a.c = tmp.c+minus_c*k; visited[a.r][a.c] = true; ans_list.push(a);
+                        a.r = tmp.r;   a.c = tmp.c+minus_c*k; visited[a.r][a.c] = true; ans_list.push(a); s_haspass.push(a);
                     }
                     for(int l=i+1;l>=0;l--){
                         if(l%2==0){
                             for(int k=1;k<=i+1;k++){
-                                a.r = tmp.r+minus_r*k;   a.c = tmp.c+minus_c*l; visited[a.r][a.c] = true; ans_list.push(a);
+                                a.r = tmp.r+minus_r*k;   a.c = tmp.c+minus_c*l; visited[a.r][a.c] = true; ans_list.push(a); 
+                                if(l==0&&k!=i+1) s_haspass.push(a);
+                                else if(k==i+1)s_haspass.push(a);
                             }
                         }
                         else{
                             for(int k=i+1;k>=1;k--){
                                 a.r = tmp.r+minus_r*k;   a.c = tmp.c+minus_c*l; visited[a.r][a.c] = true; ans_list.push(a);
+                                if(l==1) s_haspass.push(a);
+                                else if(k==i+1)s_haspass.push(a);
                             }
                         }
                     }
                 }
                 tmp = a;
-                d += i+1;
+                //d += i+1;
                 batt-=(i+2)*(i+2)-1;
                 q.clean();
                 }
-            else if(q.size()>1){
+            else if(q.size()>1&&batt-1>=matrix[n*q.back().r+q.back().c]->distance_to_R){
+                s_haspass.push(tmp);
                 tmp = q.back();
                 visited[tmp.r][tmp.c] = true;
                 ans_list.push(tmp);
                 batt--;
-                d++;
+                //d++;
                 q.clean();
             }
-            else if(q.size()==0){
-                bool nomorebig = true;
-                for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
-                    if(matrix[n*a->value.r+a->value.c]->distance_to_R==d+1){
-                        tmp = a->value;
-                        visited[tmp.r][tmp.c] = true;
-                        ans_list.push(tmp);
-                        batt--;
-                        d++;
-                        q.clean();
-                        nomorebig = false;
-                        break;
-                    }
-                } 
-                if(nomorebig == true){break;} 
+            else if(batt-1>=matrix[n*s_haspass.back().r+s_haspass.back().c]->distance_to_R){
+                tmp = s_haspass.back();
+                s_haspass.pop_back();
+                //visited[tmp.r][tmp.c] = true;
+                ans_list.push(tmp);
+                batt--;
+                if(s_haspass.empty()) break;
+                //d--; //怪怪的
+                // bool nomorebig = true;
+                // for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
+                //     if(matrix[n*a->value.r+a->value.c]->distance_to_R==d+1){
+                //         tmp = a->value;
+                //         visited[tmp.r][tmp.c] = true;
+                //         s_haspass.push(tmp);
+                //         ans_list.push(tmp);
+                //         batt--;
+                //         d++;
+                //         q.clean();
+                //         nomorebig = false;
+                //         break;
+                //     }
+                // } 
+                // if(nomorebig == true){break;} 
             }
+            else 
+                break;
+            d = matrix[n*tmp.r+tmp.c]->distance_to_R;
         }
         while(!(tmp.r==R.r&&tmp.c==R.c)){
             tmp = matrix[n*tmp.r+tmp.c]->parent;
             visited[tmp.r][tmp.c] = true;
             ans_list.push(tmp);
         }
+        s_haspass.clean();
         cout << batt << endl;
-        // static int g=1;
-        // fstream d_file;
-        // d_file.open("trace.data",ios::out|ios::app);
-        // d_file << "step: " << g << endl;
-        // g++;
-        // for(int i=0;i<m;i++){
-        //     for(int j=0;j<n;j++){
-        //         d_file << visited[i][j];
-        //     }
-        //     d_file << endl;
-        // }
-        // d_file << endl;
-        // d_file.close();
+        static int g=1;
+        fstream d_file;
+        d_file.open("trace.data",ios::out|ios::app);
+        d_file << "step: " << g << endl;
+        g++;
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                d_file << visited[i][j];
+            }
+            d_file << endl;
+        }
+        d_file << endl;
+        d_file.close();
     }
     void go_to(adjnode dest)
     {   

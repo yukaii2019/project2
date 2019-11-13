@@ -84,6 +84,8 @@ public:
         return my_size;
     }
     void clean(){
+        if(empty())
+            return;
         for(;!empty();pop()){}
         my_size = 0;
     }
@@ -115,7 +117,7 @@ private:
     int save_point;
     int save_point_2;
     int save_point_3;
-    int savept[10];
+    int savept[11];
 };
 class FCR{
 public:
@@ -123,7 +125,7 @@ public:
     void read()
     {   
         ifstream rdfile;
-        rdfile.open("floor2.data",ios::in);
+        rdfile.open("floor5.data",ios::in);
         if(!rdfile){
            cout<<"error";
         }
@@ -235,7 +237,7 @@ public:
     {
         for(int i=1;i<m-2;i++){
             for(int j=1;j<n-2;j++){
-                for(int k=2;k<=11;k++){
+                for(int k=2;k<=12;k++){
                     if(i<m-k&&j<n-k){
                         int s = SavePointUtil_N(k,i,j);
                         if(s==1)
@@ -265,7 +267,7 @@ public:
         d_file << endl;   
         for(int i=0;i<m;i++){
             for(int j=0;j<n;j++){
-                d_file << setw(4) << matrix[i*n+j]->savept[3] << " ";
+                d_file << setw(4) << matrix[i*n+j]->savept[0] << " ";
             }
             d_file << endl;
         }
@@ -335,9 +337,10 @@ public:
     {
         int batt = B;
         list<adjnode> q;
-        list<adjnode> s_haspass;
-        list<adjnode> s_forDFS;      
+        list<adjnode> s_haspass;     
         adjnode tmp(dest.r,dest.c);
+       // cout << tmp.r <<" "<<tmp.c<<endl;
+        visited[tmp.r][tmp.c] = true;
         while(!(tmp.r==R.r&&tmp.c==R.c)){
             q.push(tmp);
             tmp = matrix[n*tmp.r+tmp.c]->parent;
@@ -351,11 +354,12 @@ public:
         }
         int d = matrix[n*tmp.r+tmp.c]->distance_to_R;
         while(batt>d){
+           // cout << tmp.r <<" "<<tmp.c <<endl;
             int issave = -1;
-            int save[10];
-            for(int i=0;i<10;i++)save[i]=-1;
+            int save[11];
+            for(int i=0;i<11;i++)save[i]=-1;
 
-            for(int i=11;i>=2;i--){
+            for(int i=12;i>=2;i--){
                 if(batt-matrix[n*tmp.r+tmp.c]->distance_to_R>=i*i+i && matrix[n*tmp.r+tmp.c]->savept[i-2]!=0){
                     save[i-2] = matrix[n*tmp.r+tmp.c]->savept[i-2];
                     issave = i-2;
@@ -369,8 +373,10 @@ public:
                 }
             }
             if(q.size()==1&&batt-1>=matrix[n*q.back().r+q.back().c]->distance_to_R){
+                //cout << "v";
                 s_haspass.push(tmp);
                 tmp = q.back();
+                //cout << tmp.r<<" "<<tmp.c<<endl;
                 visited[tmp.r][tmp.c] = true;
                 ans_list.push(tmp);
                 batt--;
@@ -436,11 +442,10 @@ public:
                             for(int k=1;k<=i+1;k++){
                                 a.r = tmp.r+minus_r*k;   a.c = tmp.c+minus_c*l; visited[a.r][a.c] = true; ans_list.push(a);
                                 if(l==0&&k!=i+1) s_haspass.push(a);
-                                else if(k==i+1)s_haspass.push(a);
+                                else if(l!=0&&k==i+1)s_haspass.push(a);
                             }
                         }
                     }
-
                 }
                 else if(i%2==1){
                     for(int k=1;k<=i+1;k++){
@@ -450,8 +455,9 @@ public:
                         if(l%2==0){
                             for(int k=1;k<=i+1;k++){
                                 a.r = tmp.r+minus_r*k;   a.c = tmp.c+minus_c*l; visited[a.r][a.c] = true; ans_list.push(a); 
-                                if(l==0&&k!=i+1) s_haspass.push(a);
-                                else if(k==i+1)s_haspass.push(a);
+                                if(l==i+1) s_haspass.push(a);
+                                else if(l==0&&k!=i+1) s_haspass.push(a);
+                                else if(l!=0&&k==i+1)s_haspass.push(a);
                             }
                         }
                         else{
@@ -464,9 +470,11 @@ public:
                     }
                 }
                 tmp = a;
+                if(i==0)s_haspass.pop_back();
                 //d += i+1;
                 batt-=(i+2)*(i+2)-1;
                 q.clean();
+                //cout <<"a";
                 }
             else if(q.size()>1&&batt-1>=matrix[n*q.back().r+q.back().c]->distance_to_R){
                 s_haspass.push(tmp);
@@ -478,13 +486,14 @@ public:
                 q.clean();
             }
             else if(batt-1>=matrix[n*s_haspass.back().r+s_haspass.back().c]->distance_to_R){
+                //cout <<"c" <<s_haspass.back().r << " "<<s_haspass.back().c<<endl;
                 tmp = s_haspass.back();
                 s_haspass.pop_back();
                 //visited[tmp.r][tmp.c] = true;
                 ans_list.push(tmp);
                 batt--;
                 if(s_haspass.empty()) break;
-                //d--; //怪怪的
+                //d--; 
                 // bool nomorebig = true;
                 // for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
                 //     if(matrix[n*a->value.r+a->value.c]->distance_to_R==d+1){
@@ -504,33 +513,45 @@ public:
             else 
                 break;
             d = matrix[n*tmp.r+tmp.c]->distance_to_R;
+            //cout << batt << endl;
         }
+        //cout <<"g";
         while(!(tmp.r==R.r&&tmp.c==R.c)){
             tmp = matrix[n*tmp.r+tmp.c]->parent;
+            //cout << tmp.r <<" " <<tmp.c <<endl;
             visited[tmp.r][tmp.c] = true;
             ans_list.push(tmp);
         }
-        s_haspass.clean();
-        cout << batt << endl;
-        static int g=1;
-        fstream d_file;
-        d_file.open("trace.data",ios::out|ios::app);
-        d_file << "step: " << g << endl;
-        g++;
-        for(int i=0;i<m;i++){
-            for(int j=0;j<n;j++){
-                d_file << visited[i][j];
-            }
-            d_file << endl;
-        }
-        d_file << endl;
-        d_file.close();
+        //s_haspass.clean();
+
+        //?????????????????????????????????????????????????????????????????????????????????????
+         //cout << batt << endl;
+        // for(int i=0;i<m;i++){
+        //     for(int j=0;j<n;j++){
+        //         cout << visited[i][j];
+        //     }
+        //     cout << endl;
+        // }
+        // static int g=1;
+        // fstream d_file;
+        // d_file.open("trace.data",ios::out|ios::app);
+        // d_file << "step: " << g << endl;
+        // g++;
+        // for(int i=0;i<m;i++){
+        //     for(int j=0;j<n;j++){
+        //         d_file << visited[i][j];
+        //     }
+        //     d_file << endl;
+        // }
+        // d_file << endl;
+        // d_file.close();
     }
     void go_to(adjnode dest)
     {   
         int batt=B;
         list<adjnode> q;
         adjnode tmp(dest.r,dest.c);
+        cout << tmp.r <<" "<<tmp.c<<endl;
         while(!(tmp.r==R.r&&tmp.c==R.c)){
             q.push(tmp);
             tmp = matrix[n*tmp.r+tmp.c]->parent;
@@ -713,8 +734,9 @@ public:
                 cout << endl;
         while(!q_DistanceSorted.empty()){
             adjnode node = q_DistanceSorted.front(); 
-            if(visited[node.r][node.c]==false)
+            if(visited[node.r][node.c]==false){
                 DFS(node);
+            }
             q_DistanceSorted.pop();
         }
         // adjnode a(1,9);
@@ -760,7 +782,7 @@ int main(){
     fcr.BFS_FindDisranceToR();
     fcr.traverse();
     //fcr.SetSavePoint();
-    fcr.test();
+    //fcr.test();
     cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;
     fcr.write();
     cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;

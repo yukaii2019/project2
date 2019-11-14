@@ -158,7 +158,7 @@ public:
     void read()
     {   
         ifstream rdfile;
-        rdfile.open("floor9.data",ios::in);
+        rdfile.open("floor.data",ios::in);
         if(!rdfile){
            cout<<"error";
         }
@@ -381,8 +381,8 @@ public:
     {
         
         int batt = B;
-        list<adjnode> s_haspass;  
-        list<adjnode> go_to;   
+        stack<adjnode> s_haspass;  
+        stack<adjnode> go_to;   
         adjnode tmp(dest.r,dest.c);
         visited[tmp.r][tmp.c] = true;
         while(!(tmp.r==R.r&&tmp.c==R.c)){
@@ -390,10 +390,10 @@ public:
             tmp = matrix[n*tmp.r+tmp.c]->parent;
         }
         batt-=go_to.my_size;
-        for(;!go_to.empty();go_to.pop_back()){ 
+        for(;!go_to.empty();go_to.pop()){ 
             s_haspass.push(tmp);
             //cout << "e" <<" " << tmp.r<<" "<<tmp.c <<endl;
-            tmp = go_to.back();
+            tmp = go_to.top();
             visited[tmp.r][tmp.c] = true;
             ans_list.push(tmp);
             // for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
@@ -401,8 +401,8 @@ public:
             //         q.push(a->value);     
             // }
         }
-        //int d = matrix[n*tmp.r+tmp.c]->distance_to_R;
-        while(batt>B/2){
+        int d = matrix[n*tmp.r+tmp.c]->distance_to_R;
+        while(batt>d){
            // cout << tmp.r <<" "<<tmp.c<<endl;
             // bool issave = false;
             // int save_size = matrix[n*tmp.r+tmp.c]->savesize;
@@ -517,17 +517,26 @@ public:
             // }
             else if(path == 0){
                 //cout << "c" <<" " << tmp.r<<" "<<tmp.c <<endl;
-                tmp = s_haspass.back();
-                s_haspass.pop_back();
+                tmp = s_haspass.top();
+                s_haspass.pop();
                 ans_list.push(tmp);
                 batt--;
                 if(s_haspass.empty()) break;
             }
-            if(batt == B/2)
-                break;
 
-            
-            //d = matrix[n*tmp.r+tmp.c]->distance_to_R;
+            d = matrix[n*tmp.r+tmp.c]->distance_to_R;
+
+            if(batt == d){
+                for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
+                //if(matrix[n*a->value.r+a->value.c]->distance_to_R==d+1){
+                    if(visited[a->value.r][a->value.c]==false){
+                        NotVisit.push(a->value);
+                        path++;
+                    }
+                //}
+                }
+                break;
+            }           
         }
 
         while(!(tmp.r==R.r&&tmp.c==R.c)){
@@ -600,6 +609,7 @@ public:
         if(!opfile){
             cout << "error";
         }
+        cout << ans_list.size() <<endl;
         opfile << ans_list.size() <<endl;
         opfile << R.r << " " << R.c;
         for(;!ans_list.empty();ans_list.pop()){

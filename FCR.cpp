@@ -5,6 +5,7 @@
 using namespace std;
 
 template<class T> class list;
+template<class T> class stack;
 class FCR;
 
 template<class T>
@@ -12,6 +13,7 @@ class link{
 
 friend class FCR;
 friend class list<T>;
+friend class stack<T>;
 public:
     link(T& x):value(x),next(nullptr){}
 private:
@@ -95,7 +97,42 @@ private:
     int my_size;
 };
 
-
+template<class T>
+class stack{
+friend class FCR;
+public:
+    stack():topp(nullptr),my_size(0){}
+    void push(T& n){
+        link<T>* tmp = new link<T>(n);
+        if(empty()){
+            topp = tmp;
+        }            
+        else{
+            tmp->next = topp;
+            topp = tmp;
+        } 
+        my_size++;
+    }
+    void pop(){
+        if(empty())
+            return;
+        link<T>* deletenode = topp;
+        topp = topp->next;
+        delete deletenode;
+    }  
+    bool empty(){
+        return topp == nullptr;
+    }
+    T& top(){
+        return topp->value;
+    }
+    int size(){
+        return my_size;
+    }
+private:
+    link<T>* topp;
+    int my_size;
+};
 class ElementNode{
 friend class FCR;
 public:
@@ -121,7 +158,7 @@ public:
     void read()
     {   
         ifstream rdfile;
-        rdfile.open("floor.data",ios::in);
+        rdfile.open("floor9.data",ios::in);
         if(!rdfile){
            cout<<"error";
         }
@@ -359,13 +396,13 @@ public:
             tmp = go_to.back();
             visited[tmp.r][tmp.c] = true;
             ans_list.push(tmp);
-            for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
-                if(visited[a->value.r][a->value.c]==false)
-                    q.push(a->value);     
-            }
+            // for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
+            //     if(visited[a->value.r][a->value.c]==false)
+            //         q.push(a->value);     
+            // }
         }
-        int d = matrix[n*tmp.r+tmp.c]->distance_to_R;
-        while(batt>=d){
+        //int d = matrix[n*tmp.r+tmp.c]->distance_to_R;
+        while(batt>B/2){
            // cout << tmp.r <<" "<<tmp.c<<endl;
             // bool issave = false;
             // int save_size = matrix[n*tmp.r+tmp.c]->savesize;
@@ -377,21 +414,19 @@ public:
             // }
             int path = 0;
             for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
-                if(matrix[n*a->value.r+a->value.c]->distance_to_R==d+1){
+                //if(matrix[n*a->value.r+a->value.c]->distance_to_R==d+1){
                     if(visited[a->value.r][a->value.c]==false){
-                        q.push(a->value);
+                        NotVisit.push(a->value);
                         path++;
                     }
-                }
+                //}
             }
-            if(batt == d){
-                break;
-            }
-            else if(path==1&&batt-1>=matrix[n*q.back().r+q.back().c]->distance_to_R){
+            
+             if(path!=0){
                 //cout << "a" <<" " << tmp.r<<" "<<tmp.c <<endl;
                 s_haspass.push(tmp);
-                tmp = q.back();
-                q.pop_back();
+                tmp = NotVisit.top();
+                NotVisit.pop();
                 visited[tmp.r][tmp.c] = true;
                 ans_list.push(tmp);
                 batt--;
@@ -469,17 +504,18 @@ public:
             //     batt-=(i+2)*(i+2)-1;
             //     q.clean();
             //     }
-            else if(path>1&&batt-1>=matrix[n*q.back().r+q.back().c]->distance_to_R){
-                //cout << "b" <<" " << tmp.r<<" "<<tmp.c <<endl;
-                s_haspass.push(tmp);
-                tmp = q.back();
-                q.pop_back();
-                visited[tmp.r][tmp.c] = true;
-                ans_list.push(tmp);
-                batt--;
-                //q.clean();
-            }
-            else if(batt-1>=matrix[n*s_haspass.back().r+s_haspass.back().c]->distance_to_R){
+
+            // else if(path>1&&batt-1>=matrix[n*q.back().r+q.back().c]->distance_to_R){
+            //     //cout << "b" <<" " << tmp.r<<" "<<tmp.c <<endl;
+            //     s_haspass.push(tmp);
+            //     tmp = q.back();
+            //     q.pop_back();
+            //     visited[tmp.r][tmp.c] = true;
+            //     ans_list.push(tmp);
+            //     batt--;
+            //     //q.clean();
+            // }
+            else if(path == 0){
                 //cout << "c" <<" " << tmp.r<<" "<<tmp.c <<endl;
                 tmp = s_haspass.back();
                 s_haspass.pop_back();
@@ -487,16 +523,19 @@ public:
                 batt--;
                 if(s_haspass.empty()) break;
             }
-            else 
+            if(batt == B/2)
                 break;
-            d = matrix[n*tmp.r+tmp.c]->distance_to_R;
+
+            
+            //d = matrix[n*tmp.r+tmp.c]->distance_to_R;
         }
+
         while(!(tmp.r==R.r&&tmp.c==R.c)){
             //cout << "d" <<" " << tmp.r<<" "<<tmp.c <<endl;
             tmp = matrix[n*tmp.r+tmp.c]->parent;
             for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
                 if(visited[a->value.r][a->value.c]==false)
-                    q.push(a->value);     
+                    NotVisit.push(a->value);     
             }
             visited[tmp.r][tmp.c] = true;
             ans_list.push(tmp);
@@ -540,13 +579,14 @@ public:
             for(int j=0;j<n;j++)
                 visited[i][j] = false;
                 cout << endl;
-        q.push(R);
-        while(!q.empty()){
-            adjnode node = q.front();
-            q.pop();
+        NotVisit.push(R);
+        while(!NotVisit.empty()){
+            adjnode node = NotVisit.top();
+           // cout << node.r<< " "<<node.c<< endl;
+            NotVisit.pop();
             if(visited[node.r][node.c]==false){
                 //cout << node.r<< " "<<node.c<< endl;
-            DFS(node);
+                DFS(node);
             }
                     
         }
@@ -578,6 +618,7 @@ private:
     list<adjnode> q_DeadEnd;
     list<adjnode> ans_list;
     list<adjnode> q;
+    stack<adjnode> NotVisit;
 };
 
 

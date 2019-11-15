@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <iomanip>
 #include <time.h>
 using namespace std;
 template<class T> class stack;
@@ -14,6 +13,7 @@ friend class stack<T>;
 friend class queue<T>;
 public:
     link(T& x):value(x),next(nullptr){}
+    ~link(){}
 private:
     T value;
     link<T>* next;
@@ -23,7 +23,8 @@ class adjnode{
     friend class FCR;
 public:
     adjnode():r(0),c(0){}
-    adjnode(int rr,int cc):r(rr),c(cc){}                     
+    adjnode(int rr,int cc):r(rr),c(cc){}         
+    ~adjnode(){}            
 private:
     int r,c; 
 };
@@ -33,6 +34,7 @@ class queue{
 friend class FCR;
 public:
     queue():first(nullptr),last(nullptr),my_size(0){}
+    ~queue(){}
     void push(T& n){
         link<T>* tmp = new link<T>(n);
         if(empty()){
@@ -73,6 +75,7 @@ class stack{
 friend class FCR;
 public:
     stack():topp(nullptr),my_size(0){}
+    ~stack(){}
     void push(T& n){
         link<T>* tmp = new link<T>(n);
         if(empty()){
@@ -101,6 +104,17 @@ public:
     int size(){
         return my_size;
     }
+    void clean(){
+        if(empty())
+            return;
+        link<adjnode>* newtop;
+        while(!empty()){
+            newtop = topp->next;
+            delete topp;
+            topp = newtop;
+        }
+        my_size = 0;
+    }
 private:
     link<T>* topp;
     int my_size;
@@ -111,7 +125,7 @@ friend class FCR;
 public:
     ElementNode(){}
     ElementNode(int rr,int cc,char dd):r(rr),c(cc),data(dd),distance_to_R(0){}
-
+    ~ElementNode(){}
 private:   
     queue<adjnode> adjlist;
     int distance_to_R;
@@ -123,6 +137,7 @@ private:
 class FCR{
 public:
     FCR():m(0),n(0),B(0){}
+    ~FCR(){}
     void read()
     {   
         ifstream rdfile;
@@ -182,50 +197,10 @@ public:
             }
         }      
     } 
-    void test()
-    {
-        // fstream d_file;
-        // d_file.open("distance.data",ios::out);
-        // for(int i=0;i<m;i++){
-        //     for(int j=0;j<n;j++){
-        //         d_file << setw(4) << matrix[i*n+j]->distance_to_R << " ";
-        //     }
-        //     d_file << endl;
-        // }
-        // d_file << endl;   
-        // for(int i=0;i<m;i++){
-        //     for(int j=0;j<n;j++){
-        //         d_file << setw(4) << matrix[i*n+j]->savept << " ";
-        //     }
-        //     d_file << endl;
-        // }
-        // d_file << endl;
-        // for(int i=0;i<m;i++){
-        //     for(int j=0;j<n;j++){
-        //         d_file << setw(4) << matrix[i*n+j]->savept << " ";
-        //     }
-        //     d_file << endl;
-        // }
-        // d_file << endl;
-        // for(int i=0;i<m;i++){
-        //     for(int j=0;j<n;j++){
-        //         d_file << setw(4) << matrix[n*i+j]->savept<< " ";
-        //     }
-        //     d_file << endl;
-        // }
-        // d_file << endl;
-        // for(int i=0;i<m;i++){
-        //     for(int j=0;j<n;j++){
-        //         d_file << setw(4) << matrix[i*n+j]->dead_len[0] << " ";
-        //     }
-        //     d_file << endl;
-        // }
-        // d_file.close();
-    }
     void BFS_FindDisranceToR(){
         visited = new bool* [m];
         int disc = 0;   
-        int maxdis = -1;  
+        //int maxdis = -1;  
         link<adjnode>* curr;
 
         for(int i=0;i<m;i++)
@@ -248,13 +223,13 @@ public:
                 if(visited[curr->value.r][curr->value.c]==false){
                     visited[curr->value.r][curr->value.c] = true;             
                     matrix[n*curr->value.r+curr->value.c]->distance_to_R = matrix[n*node.r+node.c]->distance_to_R+1;
-                    if(matrix[n*node.r+node.c]->distance_to_R+1>maxdis)maxdis = matrix[n*node.r+node.c]->distance_to_R+1;//可以刪掉
+                    //if(matrix[n*node.r+node.c]->distance_to_R+1>maxdis)maxdis = matrix[n*node.r+node.c]->distance_to_R+1;//可以刪掉
                     matrix[n*curr->value.r+curr->value.c]->parent = node;
                     q.push(curr->value);
                 }
             }
         }
-        cout << maxdis << endl;
+        //cout << maxdis << endl;
         for(int i=0;i<m;i++)
             delete[] visited[i];
         delete []visited;
@@ -274,6 +249,10 @@ public:
         for(;!go_to.empty();go_to.pop()){ 
             s_haspass.push(tmp);
             tmp = go_to.top();
+            for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
+                if(visited[a->value.r][a->value.c]==false)
+                    NotVisit.push(a->value);     
+            }
             visited[tmp.r][tmp.c] = true;
             ans_list.push(tmp);
         }
@@ -285,8 +264,7 @@ public:
                         NotVisit.push(a->value);
                         path++;
                     }
-            }
-            
+            }           
              if(path!=0){
                 s_haspass.push(tmp);
                 tmp = NotVisit.top();
@@ -294,7 +272,6 @@ public:
                 visited[tmp.r][tmp.c] = true;
                 ans_list.push(tmp);
                 batt--;
-                //q.clean();--------------------------------------------------------------------------------
             }
             else if(path == 0){
                 tmp = s_haspass.top();
@@ -316,7 +293,6 @@ public:
                 break;
             }           
         }
-
         while(!(tmp.r==R.r&&tmp.c==R.c)){
             tmp = matrix[n*tmp.r+tmp.c]->parent;
             for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
@@ -326,42 +302,17 @@ public:
             visited[tmp.r][tmp.c] = true;
             ans_list.push(tmp);
         }
-        //s_haspass.clean();
-
-        //?????????????????????????????????????????????????????????????????????????????????????
-        // cout << batt << endl;
-        // for(int i=0;i<m;i++){
-        //     for(int j=0;j<n;j++){
-        //         cout << visited[i][j];
-        //     }
-        //     cout << endl;
-        // }
-        // static int g=1;
-        // fstream d_file;
-        // d_file.open("trace.data",ios::out|ios::app);
-        // d_file << "step: " << g << endl;
-        // g++;
-        // for(int i=0;i<m;i++){
-        //     for(int j=0;j<n;j++){
-        //         d_file << visited[i][j];
-        //     }
-        //     d_file << endl;
-        // }
-        // d_file << endl;
-        // d_file.close();
+        s_haspass.clean();
     }
     
     void traverse(){
         fstream d_file;
-        // d_file.open("trace.data",ios::out);
-        // d_file.close();
         visited = new bool* [m];    
         for(int i=0;i<m;i++)
             visited[i] = new bool[n];
         for(int i=0;i<m;i++)
             for(int j=0;j<n;j++)
                 visited[i][j] = false;
-                cout << endl;
         NotVisit.push(R);
         while(!NotVisit.empty()){
             adjnode node = NotVisit.top();
@@ -377,14 +328,13 @@ public:
     void write(){
         fstream opfile;
         opfile.open("final.path",ios::out);
-        if(!opfile){
+        if(!opfile)
             cout << "error";
-        }
         cout << ans_list.size() <<endl;
         opfile << ans_list.size() <<endl;
-        opfile << R.r << " " << R.c;
+        opfile << R.r << " " << R.c<<endl;
         for(;!ans_list.empty();ans_list.pop()){
-            opfile << endl << ans_list.front().r << " " << ans_list.front().c;
+            opfile << ans_list.front().r << " " << ans_list.front().c << endl;
         } 
         opfile.close(); 
     }
@@ -401,7 +351,6 @@ int main(){
     fcr.read();
     fcr.BFS_FindDisranceToR();
     fcr.traverse();
-    cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;
     fcr.write();
     cout << (double)clock() / CLOCKS_PER_SEC << "S" << endl;
 }

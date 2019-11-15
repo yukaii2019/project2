@@ -6,6 +6,7 @@ using namespace std;
 
 template<class T> class list;
 template<class T> class stack;
+template<class T> class queue;
 class FCR;
 
 template<class T>
@@ -96,6 +97,45 @@ private:
     link<T>* last;
     int my_size;
 };
+template<class T>
+class queue{
+friend class FCR;
+public:
+    queue():first(nullptr),last(nullptr),my_size(0){}
+    void push(T& n){
+        link<T>* tmp = new link<T>(n);
+        if(empty()){
+            first = tmp;
+            last = tmp;
+        }            
+        else{
+            last->next = tmp;
+            last = tmp;
+        } 
+        my_size++;
+    }
+    void pop(){
+        if(empty())
+            return;
+        link<T>* deletenode = first;
+        first = first->next;
+        delete deletenode;
+        my_size--;
+    }  
+    bool empty(){
+        return first == nullptr;
+    }
+    T& front(){
+        return first->value;
+    }
+    int size(){
+        return my_size;
+    }
+private:
+    link<T>* first;
+    link<T>* last;
+    int my_size;
+};
 
 template<class T>
 class stack{
@@ -119,6 +159,7 @@ public:
         link<T>* deletenode = topp;
         topp = topp->next;
         delete deletenode;
+        my_size--;
     }  
     bool empty(){
         return topp == nullptr;

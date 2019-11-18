@@ -188,7 +188,8 @@ public:
                         }
                     }
                     else{
-                        if(i==0)        {adjnode adjn(i+1,j);(*(matrix+i*n+j))->adjlist.push(adjn);}
+                        if((i==0&&j==0)||(i==0&&j==n-1)||(i==m-1&&j==0)||(i==m-1&&j==n-1)){}
+                        else if(i==0)   {adjnode adjn(i+1,j);(*(matrix+i*n+j))->adjlist.push(adjn);}
                         else if(i==m-1) {adjnode adjn(i-1,j);(*(matrix+i*n+j))->adjlist.push(adjn);}
                         else if(j==0)   {adjnode adjn(i,j+1);(*(matrix+i*n+j))->adjlist.push(adjn);}
                         else if(j==n-1) {adjnode adjn(i,j-1);(*(matrix+i*n+j))->adjlist.push(adjn);}
@@ -200,7 +201,7 @@ public:
     void BFS_FindDisranceToR(){
         visited = new bool* [m];
         int disc = 0;   
-        //int maxdis = -1;  
+        int maxdis = -1;  
         link<adjnode>* curr;
 
         for(int i=0;i<m;i++)
@@ -223,13 +224,13 @@ public:
                 if(visited[curr->value.r][curr->value.c]==false){
                     visited[curr->value.r][curr->value.c] = true;             
                     matrix[n*curr->value.r+curr->value.c]->distance_to_R = matrix[n*node.r+node.c]->distance_to_R+1;
-                    //if(matrix[n*node.r+node.c]->distance_to_R+1>maxdis)maxdis = matrix[n*node.r+node.c]->distance_to_R+1;//可以刪掉
+                    if(matrix[n*node.r+node.c]->distance_to_R+1>maxdis)maxdis = matrix[n*node.r+node.c]->distance_to_R+1;//可以刪掉
                     matrix[n*curr->value.r+curr->value.c]->parent = node;
                     q.push(curr->value);
                 }
             }
         }
-        //cout << maxdis << endl;
+        cout << maxdis << endl;
         for(int i=0;i<m;i++)
             delete[] visited[i];
         delete []visited;
@@ -257,6 +258,7 @@ public:
             ans_list.push(tmp);
         }
         int d = matrix[n*tmp.r+tmp.c]->distance_to_R;
+
         while(batt>d){
             int path = 0;
             for(link<adjnode>* a=matrix[n*tmp.r+tmp.c]->adjlist.first;a!=nullptr;a=a->next){
@@ -265,20 +267,34 @@ public:
                         path++;
                     }
             }           
-             if(path!=0){
+            if(path!=0){
                 s_haspass.push(tmp);
                 tmp = NotVisit.top();
-                NotVisit.pop();
                 visited[tmp.r][tmp.c] = true;
-                ans_list.push(tmp);
                 batt--;
+                if(matrix[n*NotVisit.top().r+NotVisit.top().c]->distance_to_R<=batt){
+                    ans_list.push(tmp);
+                    NotVisit.pop();
+                }
+                else{
+                    visited[tmp.r][tmp.c] = false;
+                    tmp = s_haspass.top();
+                    batt++;
+                    break;
+                }
+                
             }
             else if(path == 0){
-                tmp = s_haspass.top();
-                s_haspass.pop();
-                ans_list.push(tmp);
-                batt--;
-                if(s_haspass.empty()) break;
+                if(!s_haspass.empty()){  
+                    batt--;
+                    if(matrix[n*s_haspass.top().r+s_haspass.top().c]->distance_to_R<=batt){
+                        tmp = s_haspass.top();
+                        ans_list.push(tmp);
+                        s_haspass.pop();
+                    }
+                    else break;
+                }
+                else break;
             }
 
             d = matrix[n*tmp.r+tmp.c]->distance_to_R;
@@ -291,7 +307,7 @@ public:
                     }
                 }
                 break;
-            }           
+            }          
         }
         while(!(tmp.r==R.r&&tmp.c==R.c)){
             tmp = matrix[n*tmp.r+tmp.c]->parent;
@@ -319,7 +335,7 @@ public:
             NotVisit.pop();
             if(visited[node.r][node.c]==false){
                 DFS(node);
-            }            
+            }           
         }
         for(int i=0;i<m;i++)
             delete[] visited[i];

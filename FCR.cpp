@@ -201,7 +201,7 @@ public:
     void BFS_FindDisranceToR(){
         visited = new bool* [m];
         int disc = 0;   
-        int maxdis = -1;  
+        //int maxdis = -1;  
         link<adjnode>* curr;
 
         for(int i=0;i<m;i++)
@@ -224,13 +224,13 @@ public:
                 if(visited[curr->value.r][curr->value.c]==false){
                     visited[curr->value.r][curr->value.c] = true;             
                     matrix[n*curr->value.r+curr->value.c]->distance_to_R = matrix[n*node.r+node.c]->distance_to_R+1;
-                    if(matrix[n*node.r+node.c]->distance_to_R+1>maxdis)maxdis = matrix[n*node.r+node.c]->distance_to_R+1;//可以刪掉
+                    //if(matrix[n*node.r+node.c]->distance_to_R+1>maxdis)maxdis = matrix[n*node.r+node.c]->distance_to_R+1;//可以刪掉
                     matrix[n*curr->value.r+curr->value.c]->parent = node;
                     q.push(curr->value);
                 }
             }
         }
-        cout << maxdis << endl;
+        //cout << maxdis << endl;
         for(int i=0;i<m;i++)
             delete[] visited[i];
         delete []visited;
